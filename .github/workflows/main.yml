@@ -1,0 +1,162 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Django dependencies
+        run: pip install -r backend/django_risk_app/requirements.txt
+
+      - name: Run Django migrations (for tests)
+        run: |
+          cd backend/django_risk_app
+          python manage.py migrate
+
+      - name: Install Coverage.py for Django
+        run: pip install coverage
+
+      - name: Run Django tests with coverage
+        run: |
+          cd backend/django_risk_app
+          export DJANGO_SETTINGS_MODULE=risk_platform_project.settings
+          coverage run manage.py test risk_metrics
+          coverage report
+          coverage xml -o coverage_django.xml # Output to specific file
+
+      - name: Install FastAPI dependencies
+        run: pip install -r backend/fastapi_etl_service/requirements.txt
+        
+      - name: Install pytest-cov for FastAPI
+        run: pip install pytest-cov
+
+      - name: Run FastAPI tests with coverage
+        run: |
+          cd backend/fastapi_etl_service
+          pytest --cov=. --cov-report=xml --cov-report=html tests/test_main.py # Generate XML and HTML report
+          mv .coverage coverage.xml # Rename for consistent Codecov upload
+
+      - name: Upload Python coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/django_risk_app/coverage_django.xml,./backend/fastapi_etl_service/coverage.xml
+          flags: python # 可以用 flags 區分不同服務的覆蓋率報告
+          name: python-coverage
+          # token: ${{ secrets.CODECOV_TOKEN }} # 如果使用私有 repo 或 Codecov Enterprise
+
+  build-and-test-frontend-react:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd frontend-react
+          npm install
+
+      - name: Run React tests with coverage
+        run: |
+          cd frontend-react
+          npm test -- --watchAll=false --coverage --coverageReporters=text --coverageReporters=lcov
+
+      - name: Upload React coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend-react/coverage/lcov.info # Jest 的 lcov 報告路徑
+          flags: react # 區分報告
+          name: react-coverage
+          # token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Build React app
+        run: |
+          cd frontend-react
+          npm run build
+
+  build-and-test-flutter-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # or 'beta' or 'dev'
+
+      - name: Install dependencies
+        run: |
+          cd flutter-app
+          flutter pub get
+
+      - name: Run Flutter tests with coverage
+        run: |
+          cd flutter-app
+          flutter test --coverage
+
+      - name: Upload Flutter coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./flutter-app/coverage/lcov.info # Flutter 的 lcov 報告路徑
+          flags: flutter # 區分報告
+          name: flutter-coverage
+          # token: ${{ secrets.CODECOV_TOKEN }}
+
+  api-documentation-check:
+    runs-on: ubuntu-latest
+    needs: [build-and-test-backend] # Ensure backend is built/tested before checking docs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Django and FastAPI dependencies
+        run: |
+          pip install -r backend/django_risk_app/requirements.txt
+          pip install -r backend/fastapi_etl_service/requirements.txt
+          # Install uvicorn to run FastAPI temporarily
+          pip install uvicorn
+
+      - name: Start Django app in background
+        run: |
+          cd backend/django_risk_app
+          python manage.py runserver 8000 &
+          echo "Waiting for Django to start..."
+          sleep 10 # Give Django time to start
+          curl -f http://localhost:8000/swagger/ # Check Swagger UI accessibility
+          echo "Django Swagger UI is accessible."
+
+      - name: Start FastAPI app in background
+        run: |
+          cd backend/fastapi_etl_service
+          uvicorn main:app --host 0.0.0.0 --port 8001 &
+          echo "Waiting for FastAPI to start..."
+          sleep 10 # Give FastAPI time to start
+          curl -f http://localhost:8001/docs # Check Swagger UI accessibility
+          echo "FastAPI Docs UI is accessible."
