@@ -189,7 +189,7 @@ python generate_ai_code.py fastapi_main_test
 
 ## 🔑 關鍵程式碼範例
 
-### Django Model
+### 1. Django Model
 
 ```python
 # backend/django_risk_app/risk_metrics/models.py
@@ -198,20 +198,165 @@ import uuid
 from django.db import models
 
 class PortfolioRisk(models.Model):
+    # 主鍵：使用 UUID，自動生成
     portfolio_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, verbose_name="投資組合 ID"
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name="投資組合 ID"
     )
+    # 風險指標名稱
     metric = models.CharField(max_length=100, verbose_name="風險指標")
+    # 指標數值
     value = models.FloatField(verbose_name="指標數值")
+    # 自動填入計算時間
     calculated_at = models.DateTimeField(auto_now_add=True, verbose_name="計算時間")
 
     class Meta:
-        unique_together = ("portfolio_id", "metric")
+        unique_together = ("portfolio_id", "metric")  # 同一組合同一指標不可重複
         verbose_name = "投資組合風險"
         verbose_name_plural = "投資組合風險"
 
     def __str__(self):
+        # 管理介面顯示：UUID – 指標
         return f"{self.portfolio_id} – {self.metric}"
+```
+
+---
+
+### 2. FastAPI 計算端點
+
+```python
+# backend/fastapi_etl_service/main.py
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import pandas as pd
+
+app = FastAPI()
+
+class RiskCalculationRequest(BaseModel):
+    data: list[dict[str, float]]
+    metric: str
+    parameters: dict[str, float] = {}
+
+class RiskCalculationResponse(BaseModel):
+    metric: str
+    value: float
+    unit: str
+    description: str
+
+@app.post("/calculate-risk", response_model=RiskCalculationResponse)
+async def calculate_risk(req: RiskCalculationRequest):
+    # 驗證輸入
+    if not req.data:
+        raise HTTPException(400, "請提供價格數據。")
+
+    # 建立收益率序列
+    prices = pd.Series(item["price"] for item in req.data)
+    returns = prices.pct_change().dropna()
+    if returns.empty:
+        raise HTTPException(400, "數據不足以計算收益率。")
+
+    # 計算邏輯
+    if req.metric == "VaR":
+        cl = req.parameters.get("confidence_level", 0.95)
+        losses = -returns.sort_values().values
+        idx = int(len(losses)*(1-cl))
+        val = losses[idx]
+        unit = "%"
+    elif req.metric == "CVaR":
+        cl = req.parameters.get("confidence_level", 0.95)
+        losses = -returns.sort_values().values
+        idx = int(len(losses)*(1-cl))
+        val = losses[idx:].mean() if len(losses)>idx else 0.0
+        unit = "%"
+    elif req.metric == "Sharpe Ratio":
+        rf = req.parameters.get("risk_free_rate", 0.0)
+        mean = returns.mean()
+        std = returns.std()
+        val = (mean - rf)/std if std else 0.0
+        unit = "ratio"
+    else:
+        raise HTTPException(400, f"不支援的指標：{req.metric}")
+
+    return RiskCalculationResponse(
+        metric=req.metric,
+        value=float(val),
+        unit=unit,
+        description=f"{req.metric} 計算完成"
+    )
+```
+
+---
+
+### 3. React 顯示組件
+
+```jsx
+// frontend-react/src/components/PortfolioRiskDisplay.js
+
+import React from 'react';
+
+/**
+ * 風險指標顯示元件
+ * @param {{ metric: string, value: number }[]} riskData
+ */
+function PortfolioRiskDisplay({ riskData }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {riskData.map(({ metric, value }) => (
+        <div key={metric} className="p-4 bg-white rounded shadow">
+          <h3 className="text-xl font-semibold">{metric}</h3>
+          <p className="mt-2 text-3xl text-blue-500">
+            {metric === "Sharpe Ratio"
+              ? value.toFixed(2)
+              : `${(value * 100).toFixed(2)}%`}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default PortfolioRiskDisplay;
+```
+
+---
+
+### 4. Flutter Widget
+
+```dart
+// flutter-app/lib/widgets/risk_metric_card.dart
+
+import 'package:flutter/material.dart';
+
+/// 顯示單一風險指標的卡片
+class RiskMetricCard extends StatelessWidget {
+  final String metric;
+  final double value;
+
+  const RiskMetricCard({
+    Key? key,
+    required this.metric,
+    required this.value,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text(metric, style: const TextStyle(fontSize: 18)),
+        trailing: Text(
+          metric == 'Sharpe Ratio'
+              ? value.toStringAsFixed(2)
+              : '${(value * 100).toStringAsFixed(2)}%',
+          style: const TextStyle(fontSize: 20, color: Colors.blue),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ---
