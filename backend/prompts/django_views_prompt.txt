@@ -1,0 +1,3 @@
+請為 Django model 'PortfolioRisk' 和其 Serializer 'PortfolioRiskSerializer' 生成一個 Django REST Framework 的 ViewSet。
+ViewSet 應該支援清單 (list) 和詳細資料 (retrieve) 操作。
+請確保包含必要的 import 語句，並正確設定 queryset 和 serializer_class，queryset 應按 calculated_at 降序排列。

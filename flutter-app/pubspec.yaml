@@ -1,0 +1,28 @@
+name: flutter_app
+description: A new Flutter project for portfolio risk assessment.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev. Because this is a private package, publishing is not necessary.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  provider: ^6.0.5 # State management
+  http: ^1.1.0 # For API calls
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

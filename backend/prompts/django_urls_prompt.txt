@@ -1,0 +1,3 @@
+請為 Django 應用程式 'risk_metrics' 中的 PortfolioRiskViewSet 生成 URL 配置。
+使用 DefaultRouter 註冊 'portfolio-risks' 路徑到 PortfolioRiskViewSet，並明確指定 basename='portfoliorisk'。
+確保包含必要的 import 語句。

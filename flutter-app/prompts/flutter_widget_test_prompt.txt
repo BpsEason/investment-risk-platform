@@ -1,0 +1,7 @@
+請為 Flutter Widget lib/widgets/risk_metric_card.dart 生成單元測試。
+使用 flutter_test。
+測試應包含：
+1. 驗證 Widget 在傳入 metric 和 value 後，是否能正確顯示它們。
+2. 驗證 Widget 是否正確渲染為 Card 類型。
+3. 測試不同數值（例如浮點數格式化）是否正確顯示。
+請確保包含必要的 import 語句。

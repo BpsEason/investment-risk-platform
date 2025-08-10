@@ -1,0 +1,4 @@
+請為 Django model 'PortfolioRisk' 生成一個 Django REST Framework 的 Serializer。
+Serializer 的名稱為 PortfolioRiskSerializer。
+所有 model 欄位都應該包含在 Serializer 中。
+請確保包含必要的 import 語句。

@@ -1,0 +1,6 @@
+請為 Django 應用程式 'risk_metrics' 中的 PortfolioRisk API 視圖生成 API 測試。
+使用 Django REST Framework 的 `APITestCase`。
+測試應包含：
+1. 測試 GET /api/portfolio-risks/ 端點，驗證列表行為和狀態碼。
+2. 測試 GET /api/portfolio-risks/{uuid}/ 端點，驗證單個對象的檢索和狀態碼。
+請確保包含必要的 import 語句，並設置測試數據，使用 `reverse('portfoliorisk-list')` 和 `reverse('portfoliorisk-detail', args=[self.risk1.portfolio_id])`。

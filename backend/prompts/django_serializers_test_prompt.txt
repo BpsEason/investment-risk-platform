@@ -1,0 +1,6 @@
+請為 Django 應用程式 'risk_metrics' 中的 'PortfolioRiskSerializer' 生成單元測試。
+使用 Django 的 `TestCase`。
+測試應包含：
+1. 驗證正確數據的序列化和反序列化是否有效。
+2. 檢查序列化器是否包含所有預期的字段。
+請確保包含必要的 import 語句。

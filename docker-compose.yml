@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: risk_platform_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_broker
+    ports:
+      - "5672:5672"
+      - "15672:15672" # RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  django_app:
+    build: ./backend/django_risk_app
+    container_name: django_risk_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/django_risk_app:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: risk_platform_project.settings
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/admin/ || exit 1"] # Check Django admin or any public endpoint
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  fastapi_etl:
+    build: ./backend/fastapi_etl_service
+    container_name: fastapi_etl_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./backend/fastapi_etl_service:/app
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  react_app:
+    build: ./frontend-react
+    container_name: react_frontend
+    volumes:
+      - ./frontend-react:/app
+      - /app/node_modules # Prevent host's node_modules from overwriting container's
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://django_app:8000 # Connect to Django API Gateway via service name
+    depends_on:
+      django_app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:

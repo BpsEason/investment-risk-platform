@@ -1,0 +1,5 @@
+請為一個顯示投資組合風險指標的 React 功能型組件生成程式碼。
+組件名稱為 PortfolioRiskDisplay。
+它應該接受一個名為 'riskData' 的 prop，該 prop 是一個包含 { metric: string, value: number } 物件陣列的資料。
+使用 Tailwind CSS 進行樣式設定，顯示一個簡單的卡片佈局，每個風險指標一個卡片。
+確保 import React。

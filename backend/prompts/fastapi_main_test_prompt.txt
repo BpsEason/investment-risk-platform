@@ -1,0 +1,8 @@
+請為 FastAPI 應用程式 backend/fastapi_etl_service/main.py 生成 API 測試。
+使用 fastapi.testclient.TestClient。
+測試應包含：
+1. 測試 GET / 端點，驗證根路徑是否返回正確的歡迎訊息。
+2. 測試 POST /calculate-risk 端點，使用 VaR 指標和模擬數據，驗證狀態碼和響應結構。
+3. 測試 POST /calculate-risk 端點，傳入不支持的指標，驗證是否返回 400 錯誤。
+4. 測試 POST /etl/import-data 端點，模擬 CSV 檔案上傳，驗證狀態碼和響應中的 'rows_processed' 數量。
+請確保包含必要的 import 語句，並正確使用 `io.BytesIO` 和 `files` 參數進行檔案上傳測試。

@@ -1,0 +1,10 @@
+fastapi>=0.100.0,<0.110.0
+uvicorn>=0.23.0,<0.30.0
+sqlalchemy>=2.0.0,<3.0.0 # Used for database operations if needed
+psycopg2-binary>=2.9,<3.0
+pandas>=2.0.0,<3.0.0 # Used for data processing
+openpyxl>=3.0.0,<4.0.0 # Used for reading/writing Excel
+openai>=1.0.0,<2.0.0
+python-decouple>=3.8,<4.0
+python-multipart>=0.0.6,<0.0.7 # For FastAPI file uploads
+numpy>=1.26.0,<2.0.0 # For numerical calculations in risk functions

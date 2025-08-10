@@ -1,0 +1,5 @@
+請為一個顯示單個投資組合風險指標的 Flutter Widget 生成程式碼。
+Widget 名稱為 RiskMetricCard。
+它應該接受 'metric' (字串) 和 'value' (浮點數) 作為參數。
+使用 Material Design 的 Card widget 進行樣式設定，並在卡片中清晰地顯示指標名稱和數值。
+請確保包含必要的 import 語句 (如 material.dart)。

@@ -1,0 +1,7 @@
+請為 React 組件 src/components/PortfolioRiskDisplay.js 生成 Jest 單元測試。
+使用 @testing-library/react。
+測試應包含：
+1. 渲染時是否顯示正確數量的風險卡片。
+2. 每個卡片是否正確顯示指標名稱和數值。
+3. 處理空數據時組件是否能正常渲染。
+請確保包含必要的 import 語句（如 render, screen）。
