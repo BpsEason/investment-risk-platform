@@ -1,8 +1,5 @@
 # AI 驅動的投資組合風險評估與報告平台
 
-[![AI-Powered](https://img.shields.io/badge/AI-Powered-OpenAI-blue)]()
-
----
 
 ## 🚀 專案功能
 
