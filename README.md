@@ -1,11 +1,5 @@
 # AI 驅動的投資組合風險評估與報告平台
 
-[![AI-Powered](https://img.shields.io/badge/AI-Powered-OpenAI-blue)]()
-
----
-
-## 🚀 專案功能
-
 - **自動化風險計算**  
   支援 VaR、CVaR、Sharpe Ratio，結合歷史模擬與統計方法，一鍵取回核心指標。
 
@@ -34,14 +28,14 @@
 
 ```
 ┌──────────────┐       ┌──────────────┐
-│  React Web   │◀──────▶│   Django     │
-│ + D3.js 圖表 │       │ 風險計算微服務 │
+│  React Web   │◀────▶│   Django     │
+│ + D3.js 圖表  │       │ 風險計算微服務 │
 └──────────────┘       └───────┬──────┘
         ▲                        │
         │                        ▼
 ┌──────────────┐       ┌──────────────┐
-│ Flutter App  │◀──────▶│   FastAPI    │
-│ (行動端 UI)   │       │ ETL ＆ Gateway│
+│ Flutter App  │◀────▶│   FastAPI    │
+│ (行動端 UI)   │       │ETL ＆ Gateway│
 └──────────────┘       └───────┬──────┘
         │                        │
         ▼                        ▼
